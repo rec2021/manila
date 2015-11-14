@@ -1,0 +1,26 @@
+{
+  "name": "manila",
+  "version": "1.0.0",
+  "description": "The Node template engine you're looking for",
+  "main": "manila.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mgrahamjo/manila.git"
+  },
+  "keywords": [
+    "template",
+    "engine",
+    "node",
+    "express",
+    "parser"
+  ],
+  "author": "mike",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mgrahamjo/manila/issues"
+  },
+  "homepage": "https://github.com/mgrahamjo/manila#readme"
+}
