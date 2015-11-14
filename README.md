@@ -58,7 +58,7 @@ app.listen(3000);
 
 Run `node .` and open `http://localhost:3000` in your browser to see the rendered result.
 
-# use with vanilla Node
+# Use with vanilla Node
 
 ```javascript
 // index.js
@@ -99,6 +99,7 @@ const manila = require('manila')({
 `{{ <expression> | <filter> }}`: Filters can be used to modify the treatment of `<expression>`. At present, there are only two built-in filters:
 
 `safe`: prevents HTML escaping the value. Use only when you can trust the content as code.
+
 `skip`: prevents parsing of the tag. For example, `{{var|skip}}` would render `{{var}}`.
 
 ## Includes
