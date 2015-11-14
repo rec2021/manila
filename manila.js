@@ -96,10 +96,7 @@ function parseLoops(template, context, match) {
     try {
         list = run(arrName, context);
     }
-    catch(err) {
-        // array is undefined
-        console.error(err);
-    }
+    catch(err) {}
 
     if (index.indexOf('.') !== -1) {
         let keys = index.split('.');
@@ -291,6 +288,7 @@ function render(filepath, context, callback) {
 }
 
 module.exports = opts => {
-    partialsDir = path.join(path.dirname(module.parent.filename), opts.partials || 'views', '/');
+    partialsDir = opts ? opts.partials || 'views' : 'views';
+    partialsDir = path.join(path.dirname(module.parent.filename), partialsDir, '/');
     return render;
 };

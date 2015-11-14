@@ -3,24 +3,32 @@
   "version": "1.0.0",
   "description": "The Node template engine you're looking for",
   "main": "manila.js",
+  "jsnext:main": "manila.js",
   "scripts": {
-    "test": "test"
+    "test": "nodeunit test/test.js"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/mgrahamjo/manila.git"
+  },
+  "engines": {
+    "node": ">=4.0.0"
   },
   "keywords": [
     "template",
     "engine",
     "node",
     "express",
-    "parser"
+    "parser",
+    "html"
   ],
-  "author": "mike",
+  "author": "Mike Johnson",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/mgrahamjo/manila/issues"
   },
-  "homepage": "https://github.com/mgrahamjo/manila#readme"
+  "homepage": "https://github.com/mgrahamjo/manila#readme",
+  "devDependencies": {
+    "nodeunit": "^0.9.1"
+  }
 }

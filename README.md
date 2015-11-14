@@ -1,8 +1,94 @@
 # Manila
 
-Manila is a template engine for Node. It's designed to be fast, simple, and pleasant to use. 
+Manila is a template engine for Node. By at least [one benchmark](https://github.com/baryshev/template-benchmark), it is the fastest template engine tested at the time of writing:
+```javascript
+// rendering 100000 templates
+1) manila               - 902ms
+2) ECT                  - 1082ms
+3) Gaikan               - 1367ms
+4) Fest                 - 1514ms
+5) Dust                 - 1579ms
+6) doT                  - 1751ms
+7) Hogan.js             - 1916ms
+8) EJS without `with`   - 2660ms
+9) Swig                 - 3607ms
+10) Eco                 - 4077ms
+11) Handlebars.js       - 4082ms
+12) Underscore          - 4243ms
+13) EJS                 - 5481ms
+14) Jade without `with` - 5936ms
+15) CoffeeKup           - 7622ms
+16) Jade                - 18776ms
+```
 
-Documentation on using Manila with Express is coming shortly.
+Manila was developed using ES2015 features and currently requires Node version 4.0.0 or later.
+
+# Installation
+```
+npm install manila
+```
+
+# Use with Express
+
+```javascript
+// index.js
+const app = require('express')(),
+	manila = require('manila')();
+
+app.get('/', (req, res) => {
+	res.render('index', {
+		message: 'Hello, world!'
+	});
+});
+
+// Pass Manila to Express
+app.engine('mnla', manila);
+// Register Manila as a view engine
+app.set('view engine', 'mnla');
+// Set the views directory
+app.set('views', './views');
+
+app.listen(3000);
+```
+
+```html
+<!-- views/index.mnla -->
+<h1>{{message}}</h1>
+```
+
+Run `node .` and open `http://localhost:3000` in your browser to see the rendered result.
+
+# use with vanilla Node
+
+```javascript
+// index.js
+const http = require('http'),
+	manila = require('manila')();
+
+http.createServer((req, res) => {
+
+	manila(__dirname + 'views/index.mnla', { message: 'Hello, world!' }, (err, html) => {
+		res.writeHead(200, 'text/html; charset=UTF-8');
+		res.end(html);
+	});
+
+}).listen(3000);
+```
+
+```html
+<!-- views/index.mnla -->
+<h1>{{message}}</h1>
+```
+
+## Configuration
+
+The Manila module accepts a configuration object. Currently the only option is `partials`, the path to the directory in which to look for partial .mnla files to use with `{{include ... }}` tags. This path is relative to the root directory. 
+
+```javascript
+const manila = require('manila')({
+	partials: 'views/partials'
+});
+```
 
 ## Variables
 
@@ -13,7 +99,7 @@ Documentation on using Manila with Express is coming shortly.
 `{{ <expression> | <filter> }}`: Filters can be used to modify the treatment of `<expression>`. At present, there are only two built-in filters:
 
 `safe`: prevents HTML escaping the value. Use only when you can trust the content as code.
-`skip`: prevents parsing of the tag. For example, `{{var|skip}}` would render `{{var|skip}}`.
+`skip`: prevents parsing of the tag. For example, `{{var|skip}}` would render `{{var}}`.
 
 ## Includes
 
@@ -44,3 +130,9 @@ Unfortunately, if `value` is undefined, then the expression `!value` will throw 
 #### Object Loops
 
 `{{ for <key>.<value> in <object> }} ... {{ endfor }}`: Renders the contained markup once for each property on `<object>`. Within each loop, `{{<key>}}` will be replaced with the corresponding key in `<object>`, and `{{<value>}}` will be replaced with that key's value.
+
+## Use with Angular
+
+Manila's double curly brace syntax is the same as Angular's tag syntax. If you try to write an Angular template as a Manila view, it will be interpolated by Manila before Angular gets it. You can get around this by using the `skip` filter on the tags you want to leave unparsed by Manila.
+
+In a future release, Manila will support configurable tag syntax.
