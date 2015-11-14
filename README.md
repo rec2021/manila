@@ -10,13 +10,14 @@ Documentation on using Manila with Express is coming shortly.
 
 ## Filters
 
-`{{ <expression> | <filter> }}`: Filters can be used to modify the treatment of <expression>. At present, there are only two built-in filters:
+`{{ <expression> | <filter> }}`: Filters can be used to modify the treatment of `<expression>`. At present, there are only two built-in filters:
 
 `safe`: prevents HTML escaping the value. Use only when you can trust the content as code.
-`skip`: prevents parsing of the tag. For example, {{var|skip}} would render {{var|skip}}.
-Includes
+`skip`: prevents parsing of the tag. For example, `{{var|skip}}` would render `{{var|skip}}`.
 
-`{{ include <path/to/file> }}`: Includes the content of the named file as part of the current template. `<path/to/file>` is relative to views/. Leave out the file extension - .html is assumed.
+## Includes
+
+`{{ include <path/to/file> }}`: Includes the content of the named file as part of the current template. `<path/to/file>` is relative to `views/` by default, but the partials folder is configurable by passing `{ partials: 'path' }` to the `manila` function. Leave out the file extension - .mnla is assumed.
 
 ## Conditional Blocks
 
