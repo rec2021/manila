@@ -91,7 +91,8 @@ function parseLoops(template, context, match) {
         html    = match[3],
         list    = [],
         output  = '',
-        key;
+        key,
+        subContext = Object.create(context);
 
     try {
         list = run(arrName, context);
@@ -107,12 +108,12 @@ function parseLoops(template, context, match) {
     if (list) {
         Object.keys(list).forEach(function(value) {
             if (key) {
-                context[index] = value;
-                context[key] = list[value];
+                subContext[index] = value;
+                subContext[key] = list[value];
             } else {
-                context[index] = list[value];
+                subContext[index] = list[value];
             }
-            output += parse(html, context);
+            output += parse(html, subContext);
         });
     }
 
