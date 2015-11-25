@@ -26,7 +26,8 @@ const fs = require('fs'),
         '&#39;': '\''
     };
 
-let partialsDir;
+let partialsDir,
+    baseDir;
 
 function run(expression, context) {
     return vm.runInNewContext(expression, context, {
@@ -274,6 +275,10 @@ function parse(template, context) {
 
 function render(filepath, context, callback) {
 
+    if (filepath.indexOf(baseDir) !== 0) {
+        filepath = path.join(baseDir, filepath);
+    }
+
     read(filepath, { encoding: 'utf8' }, function(err, template) {
 
         if (err) {
@@ -289,7 +294,9 @@ function render(filepath, context, callback) {
 }
 
 module.exports = opts => {
-    partialsDir = opts ? opts.partials || 'views' : 'views';
-    partialsDir = path.join(path.dirname(module.parent.filename), partialsDir, '/');
+    baseDir = path.join(path.dirname(require.main.filename), 'views');
+    baseDir = path.join(opts ? opts.views || baseDir : baseDir, '/');
+    partialsDir = path.join(opts ? opts.partials || baseDir : baseDir, '/');
+
     return render;
 };
