@@ -84,7 +84,7 @@ http.createServer((req, res) => {
 
 The Manila module accepts a configuration object with the following optional properties:
 
-`root`: the full path to the directory in which to look for views. Defaults to 'views' in the same directory as the entry point of the application.
+`views`: the full path to the directory in which to look for views. Defaults to 'views' in the same directory as the entry point of the application.
 
 `partials`: the full path to the directory in which to look for partial mnla files to use with `{{include ... }}` tags. Defaults to `'views'`.
 
