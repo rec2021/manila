@@ -1,7 +1,8 @@
 const fs = require('fs'),
 	manila = require('../manila')({
-		partials: __dirname + '/views/partials',
-		views: __dirname + '/views'
+		root: __dirname,
+		partials: 'views/partials',
+		views: 'views'
 	}),
 	context = {
 		title: '<span attr="test">hi \'ol boy</span>',
@@ -17,8 +18,12 @@ const fs = require('fs'),
 exports.test = function(test) {
 	manila('input.mnla', context, (err, output) => {
 		fs.readFile(__dirname + '/output.html', { encoding: 'utf8' }, (err, desired) => {
-			test.ok(output.replace(/\s/g, '') === desired.replace(/\s/g, ''), 'output should be correct');
-		    test.done();
+			if (err) {
+				console.trace(err);
+			} else {
+				test.ok(output.replace(/\s/g, '') === desired, 'output should be correct');
+			    test.done();
+			}
 		});
 	});
 };

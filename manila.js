@@ -12,22 +12,21 @@ const fs = require('fs'),
     endif = /{{\s*?endif\s*?}}/i,
     elseBlock = /{{\s*?else\s*?}}/i,
     escapeMap = {
-        '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        '\'': '&#39;'
+        '\'': '&apos;'
     },
     unescapeMap = {
-        '&amp;': '&',
         '&lt;': '<',
         '&gt;': '>',
         '&quot;': '"',
-        '&#39;': '\''
+        '&apos;': '\''
     };
 
 let partialsDir,
-    baseDir;
+    viewsDir,
+    root;
 
 function run(expression, context) {
     return vm.runInNewContext(expression, context, {
@@ -42,7 +41,7 @@ function htmlEscape(str) {
 }
 
 function htmlUnescape(str) {
-    return str.replace(/(&amp;)(&lt;)(&gt;)(&quot;)(&#39;)/g, c => {
+    return str.replace(/(&lt;)(&gt;)(&quot;)(&apos;)/g, c => {
         return unescapeMap[c];
     });
 }
@@ -68,7 +67,7 @@ function parseVars(template, context, match) {
             value = run(ref, context);
             if (typeof value === 'string') {
                 if (filters.indexOf('safe') !== -1) {
-                    value = htmlUnescape(value);
+                    //value = htmlUnescape(value);
                 } else {
                     value = htmlEscape(value);
                 }
@@ -159,7 +158,7 @@ function parseIfs(template, context, match) {
 // Recursively asyncronously parses partial includes
 // then calls the callback with the result
 function parseIncludes(template, callback) {
-    
+
     let match = includeRegx.exec(template),
         raw, include;
 
@@ -167,9 +166,8 @@ function parseIncludes(template, callback) {
 
         raw  = match[0];
         include = match[1];
-
+        
         read(partialsDir + include + '.mnla', { encoding: 'utf8' }, function(err, html) {
-
             parseIncludes(template.replace(raw, html), callback);
         });
     } else {
@@ -275,8 +273,12 @@ function parse(template, context) {
 
 function render(filepath, context, callback) {
 
-    if (filepath.indexOf(baseDir) !== 0) {
-        filepath = path.join(baseDir, filepath);
+    if (filepath.indexOf(root) !== 0) {
+        filepath = path.join(root, viewsDir, filepath);
+    }
+
+    if (!filepath.match(/\.mnla$/)) {
+        filepath += '.mnla';
     }
 
     read(filepath, { encoding: 'utf8' }, function(err, template) {
@@ -286,7 +288,6 @@ function render(filepath, context, callback) {
         } else {
 
             parseIncludes(template, fullTemplate => {
-
                 callback(undefined, parse(fullTemplate, context));
             });
         }
@@ -294,9 +295,10 @@ function render(filepath, context, callback) {
 }
 
 module.exports = opts => {
-    baseDir = path.join(path.dirname(require.main.filename), 'views');
-    baseDir = path.join(opts ? opts.views || baseDir : baseDir, '/');
-    partialsDir = path.join(opts ? opts.partials || baseDir : baseDir, '/');
+    root = opts.root || path.dirname(require.main.filename);
+    viewsDir = path.join(root, 'views');
+    viewsDir = path.join(opts ? opts.views || viewsDir : viewsDir, '/');
+    partialsDir = path.join(root, opts ? opts.partials || viewsDir : viewsDir, '/');
 
     return render;
 };

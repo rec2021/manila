@@ -84,14 +84,17 @@ http.createServer((req, res) => {
 
 The Manila module accepts a configuration object with the following optional properties:
 
-`views`: the full path to the directory in which to look for views. Defaults to 'views' in the same directory as the entry point of the application.
+`root`: the absolute path to the root of your app. Defaults to the directory which contains the application entry point.
 
-`partials`: the full path to the directory in which to look for partial mnla files to use with `{{include ... }}` tags. Defaults to `'views'`.
+`views`: the path to the directory in which to look for views, relative to the root. Defaults to 'views'.
+
+`partials`: the directory in which to look for partial mnla files to use with `{{include ... }}` tags, realtive to the root. Defaults to the same directory as the `views` setting.
 
 ```javascript
 const manila = require('manila')({
-	views: __dirname + '/views',
-	partials: __dirname + '/views/partials'
+	root: __dirname,
+	views: 'views',
+	partials: 'views/partials'
 });
 ```
 
