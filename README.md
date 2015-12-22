@@ -90,11 +90,14 @@ The Manila module accepts a configuration object with the following optional pro
 
 `partials`: the directory in which to look for partial mnla files to use with `{{include ... }}` tags, realtive to the root. Defaults to the same directory as the `views` setting.
 
+`extension`: the file extension of your views/partials. Defaults to `'.mnla'`.
+
 ```javascript
 const manila = require('manila')({
 	root: __dirname,
 	views: 'views',
-	partials: 'views/partials'
+	partials: 'views/partials',
+	extension: '.mnla'
 });
 ```
 
@@ -144,4 +147,3 @@ Unfortunately, if `value` is undefined, then the expression `!value` will throw 
 
 Manila's double curly brace syntax is the same as Angular's tag syntax. If you try to write an Angular template as a Manila view, it will be interpolated by Manila before Angular gets it. You can get around this by using the `skip` filter on the tags you want to leave unparsed by Manila.
 
-In a future release, Manila will support configurable tag syntax.

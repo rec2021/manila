@@ -1,0 +1,23 @@
+<h1>{{title}}</h1>
+<h3>{{title|safe}}</h3>
+<h4>{{title|skip}}</h4>
+
+<ul>
+{{for item in items}}
+	{{if item}}
+	<li>{{item}}<i>{{for key.value in obj}}{{key}}:{{value}}{{endfor}}</i></li>
+	{{endif}}
+{{endfor}}
+</ul>
+
+{{if flag}}
+flag is true
+{{else}}
+flag is false
+{{endif}}
+
+{{if not flag}}
+<div>not works</div>
+{{endif}}
+
+{{include inc}}

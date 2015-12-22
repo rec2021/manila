@@ -1,9 +1,6 @@
+'use strict';
+
 const fs = require('fs'),
-	manila = require('../manila')({
-		root: __dirname,
-		partials: 'views/partials',
-		views: 'views'
-	}),
 	context = {
 		title: '<span attr="test">hi \'ol boy</span>',
 		items: [1, 2, 3, 4, 5],
@@ -13,17 +10,37 @@ const fs = require('fs'),
 			c: 3
 		},
 		flag: false
-	};
+	},
+	desired = fs.readFileSync(__dirname + '/output.html', { encoding: 'utf8' }),
+	manila = require('../manila')({
+		root: __dirname,
+		partials: 'views/partials',
+		views: 'views'
+	}),
+	manila2 = require('../manila')({
+		root: __dirname,
+		partials: 'views/partials',
+		views: 'views',
+		extension: 'html'
+	});
 
-exports.test = function(test) {
+exports.checkOutput = function(test) {
 	manila('input.mnla', context, (err, output) => {
-		fs.readFile(__dirname + '/output.html', { encoding: 'utf8' }, (err, desired) => {
-			if (err) {
-				console.trace(err);
-			} else {
-				test.ok(output.replace(/\s/g, '') === desired, 'output should be correct');
-			    test.done();
-			}
-		});
+		test.ok(output.replace(/\s/g, '') === desired, 'output should be correct');
+		test.done();
+	});
+};
+
+exports.extensionExcluded = function(test) {
+	manila('input', context, (err, output) => {
+		test.ok(output.replace(/\s/g, '') === desired, 'should work without filepath extension');
+		test.done();
+	});
+};
+
+exports.customExtension = function(test) {
+	manila2('input.html', context, (err, output) => {
+		test.ok(output.replace(/\s/g, '') === desired, 'should accept custom extension');
+		test.done();
 	});
 };

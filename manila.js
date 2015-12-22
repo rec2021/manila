@@ -1,16 +1,17 @@
 'use strict';
 
-const fs = require('fs'),
-    read = fs.readFile,
+const read = require('fs').readFile,
     vm = require('vm'),
     path = require('path'),
-    includeRegx = /{{\s*?include\s(\S*?)\s*?}}/i,
-    varRegx = /{{([\s\S]*?)}}/,
-    forIn = /{{\s*?for\s*?\S*?\s*?in\s*?\S*?\s*?}}/i,
-    endfor = /{{\s*?endfor\s*?}}/i,
-    ifBlock = /{{\s*?if\s*?[\s\S]*?\s*?}}/i,
-    endif = /{{\s*?endif\s*?}}/i,
-    elseBlock = /{{\s*?else\s*?}}/i,
+    rx = {
+        include: /{{\s*?include\s(\S*?)\s*?}}/i,
+        variable: /{{([\s\S]*?)}}/,
+        forIn: /{{\s*?for\s*?\S*?\s*?in\s*?\S*?\s*?}}/i,
+        endFor: /{{\s*?endfor\s*?}}/i,
+        ifBlock: /{{\s*?if\s*?[\s\S]*?\s*?}}/i,
+        endIf: /{{\s*?endif\s*?}}/i,
+        elseBlock: /{{\s*?else\s*?}}/i
+    },
     escapeMap = {
         '<': '&lt;',
         '>': '&gt;',
@@ -24,9 +25,7 @@ const fs = require('fs'),
         '&apos;': '\''
     };
 
-let partialsDir,
-    viewsDir,
-    root;
+/*---------------- Utility functions ----------------*/
 
 function run(expression, context) {
     return vm.runInNewContext(expression, context, {
@@ -45,6 +44,8 @@ function htmlUnescape(str) {
         return unescapeMap[c];
     });
 }
+
+/*---------------- Parsing functions ----------------*/
 
 function parseVars(template, context, match) {
 
@@ -133,7 +134,7 @@ function parseIfs(template, context, match) {
         expression = expression.substring(3).trim();
     }
 
-    html = html.split(elseBlock);
+    html = html.split(rx.elseBlock);
 
     try {
         doShow = run(expression, context);
@@ -157,9 +158,9 @@ function parseIfs(template, context, match) {
 
 // Recursively asyncronously parses partial includes
 // then calls the callback with the result
-function parseIncludes(template, callback) {
+function parseIncludes(template, callback, opts) {
 
-    let match = includeRegx.exec(template),
+    let match = rx.include.exec(template),
         raw, include;
 
     if (match !== null) {
@@ -167,27 +168,29 @@ function parseIncludes(template, callback) {
         raw  = match[0];
         include = match[1];
         
-        read(partialsDir + include + '.mnla', { encoding: 'utf8' }, function(err, html) {
-            parseIncludes(template.replace(raw, html), callback);
+        read(opts.partialsDir + include + opts.extension, { encoding: 'utf8' }, function(err, html) {
+            parseIncludes(template.replace(raw, html), callback, opts);
         });
     } else {
         callback(template);
     }
 }
 
-// In order to support nesting, we need to build
+/*---------------- Regex generating functions ----------------*/
+
+// In order to support nesting, we need to dynamically build
 // a regex that ignores the correct number of closing tags.
 function getLoopRegx(template) {
     
     let result,
 
-        secondHalf = template.split(forIn)[1];
+        secondHalf = template.split(rx.forIn)[1];
 
     if (!secondHalf) {
 
         result = false;
     // If another for-in loop starts before this one is closed...
-    } else if (secondHalf.search(forIn) < secondHalf.search(endfor)) {
+    } else if (secondHalf.search(rx.forIn) < secondHalf.search(rx.endFor)) {
         // use lazy matching
         result = /{{\s*?for\s*?(\S*?)\s*?in\s*?(\S*?)\s*?}}([\s\S]*?){{\s*?endfor\s*?}}/i;
 
@@ -202,14 +205,14 @@ function getLoopRegx(template) {
 function getIfRegx(template) {
 
     let result,
-        match = ifBlock.exec(template);
+        match = rx.ifBlock.exec(template);
 
     if (match) {
 
-        let secondHalf = template.substring(template.search(ifBlock) + match[0].length);
+        let secondHalf = template.substring(template.search(rx.ifBlock) + match[0].length);
 
         // If another if block starts before this one is closed...
-        if (secondHalf.search(ifBlock) < secondHalf.search(endif)) {
+        if (secondHalf.search(rx.ifBlock) < secondHalf.search(rx.endIf)) {
             // use greedy matching
             result = /{{\s*?if\s*?([\s\S]*?)\s*?}}([\s\S]*){{\s*?endif\s*?}}/i;
 
@@ -222,12 +225,13 @@ function getIfRegx(template) {
     return result;
 }
 
-// Parsing functions that run syncronously are executed here.
+/*---------------- Main parsing function (syncronous) ----------------*/
+
 function parse(template, context) {
 
     let match, regx,
 
-        loopFirst = template.search(forIn) < template.search(ifBlock);
+        loopFirst = template.search(rx.forIn) < template.search(rx.ifBlock);
 
     if (loopFirst) {
 
@@ -262,7 +266,7 @@ function parse(template, context) {
         }
     }
 
-    match = varRegx.exec(template);
+    match = rx.variable.exec(template);
 
     if (match) {
         template = parseVars(template, context, match);
@@ -271,34 +275,56 @@ function parse(template, context) {
     return template;
 }
 
-function render(filepath, context, callback) {
+/*---------------- Manila ----------------*/
 
-    if (filepath.indexOf(root) !== 0) {
-        filepath = path.join(root, viewsDir, filepath);
-    }
+function manila(opts) {
 
-    if (!filepath.match(/\.mnla$/)) {
-        filepath += '.mnla';
-    }
+    let partialsDir,
+        viewsDir,
+        root,
+        extRegx,
+        extension = '.mnla';
 
-    read(filepath, { encoding: 'utf8' }, function(err, template) {
-
-        if (err) {
-            callback(err);
-        } else {
-
-            parseIncludes(template, fullTemplate => {
-                callback(undefined, parse(fullTemplate, context));
-            });
-        }
-    });
-}
-
-module.exports = opts => {
     root = opts.root || path.dirname(require.main.filename);
     viewsDir = path.join(root, 'views');
     viewsDir = path.join(opts ? opts.views || viewsDir : viewsDir, '/');
     partialsDir = path.join(root, opts ? opts.partials || viewsDir : viewsDir, '/');
+    extension = opts.extension ? '.' + opts.extension : extension;
+    extension = extension.replace('..', '.');
+    extRegx = new RegExp(extension + '$');
 
-    return render;
+    // By creating and returning a closure we can support multiple
+    // "instances" of manila with different configurations running
+    // in one app. All configurable variable references go here:
+    return (filepath, context, callback) => {
+
+        // Support relative file paths
+        if (filepath.indexOf(root) !== 0) {
+            filepath = path.join(root, viewsDir, filepath);
+        }
+
+        // Support extensionless file paths
+        if (!filepath.match(extRegx)) {
+            filepath += extension;
+        }
+
+        read(filepath, { encoding: 'utf8' }, function(err, template) {
+
+            if (err) {
+                callback(err);
+            } else {
+
+                parseIncludes(template, fullTemplate => {
+                    callback(undefined, parse(fullTemplate, context));
+                }, {
+                    partialsDir: partialsDir,
+                    extension: extension
+                });
+            }
+        });
+    };
+}
+
+module.exports = opts => {
+    return manila(opts);
 };
