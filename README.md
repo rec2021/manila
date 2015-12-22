@@ -93,10 +93,11 @@ The Manila module accepts a configuration object with the following optional pro
 `extension`: the file extension of your views/partials. Defaults to `'.mnla'`.
 
 ```javascript
+// defaults:
 const manila = require('manila')({
-	root: __dirname,
+	root: path.dirname(require.main.filename),
 	views: 'views',
-	partials: 'views/partials',
+	partials: 'views',
 	extension: '.mnla'
 });
 ```
@@ -115,7 +116,7 @@ const manila = require('manila')({
 
 ## Includes
 
-`{{ include <path/to/file> }}`: Includes the content of the named file as part of the current template. `<path/to/file>` is relative to `views/` by default, but the partials folder is configurable by passing `{ partials: 'path' }` to the `manila` function. Leave out the file extension - .mnla is assumed.
+`{{ include <path/to/file> }}`: Includes the content of the named file as part of the current template. `<path/to/file>` is relative to `views/` by default, but the partials folder is configurable by passing `{ partials: 'path' }` to the `manila` function. 
 
 ## Conditional Blocks
 

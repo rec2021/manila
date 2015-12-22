@@ -81,7 +81,7 @@ function parseVars(template, context, match) {
         }
     }
 
-    return parse(template.replace(raw, value), context);
+    return render(template.replace(raw, value), context);
 }
 
 function parseLoops(template, context, match) {
@@ -114,11 +114,11 @@ function parseLoops(template, context, match) {
             } else {
                 subContext[index] = list[value];
             }
-            output += parse(html, subContext);
+            output += render(html, subContext);
         });
     }
 
-    return parse(template.replace(raw, output), context);
+    return render(template.replace(raw, output), context);
 }
 
 function parseIfs(template, context, match) {
@@ -153,7 +153,7 @@ function parseIfs(template, context, match) {
         html = '';
     }
 
-    return parse(template.replace(raw, html), context);
+    return render(template.replace(raw, html), context);
 }
 
 // Recursively asyncronously parses partial includes
@@ -166,9 +166,13 @@ function parseIncludes(template, callback, opts) {
     if (match !== null) {
 
         raw  = match[0];
-        include = match[1];
+        include = opts.partialsDir + match[1];
+
+        if (!include.match(new RegExp(opts.extension + '$'))) {
+            include += opts.extension;
+        }
         
-        read(opts.partialsDir + include + opts.extension, { encoding: 'utf8' }, function(err, html) {
+        read(include, { encoding: 'utf8' }, function(err, html) {
             parseIncludes(template.replace(raw, html), callback, opts);
         });
     } else {
@@ -225,9 +229,9 @@ function getIfRegx(template) {
     return result;
 }
 
-/*---------------- Main parsing function (syncronous) ----------------*/
+/*---------------- Main rendering function (syncronous) ----------------*/
 
-function parse(template, context) {
+function render(template, context) {
 
     let match, regx,
 
@@ -282,7 +286,6 @@ function manila(opts) {
     let partialsDir,
         viewsDir,
         root,
-        extRegx,
         extension = '.mnla';
 
     root = opts.root || path.dirname(require.main.filename);
@@ -291,40 +294,49 @@ function manila(opts) {
     partialsDir = path.join(root, opts ? opts.partials || viewsDir : viewsDir, '/');
     extension = opts.extension ? '.' + opts.extension : extension;
     extension = extension.replace('..', '.');
-    extRegx = new RegExp(extension + '$');
 
     // By creating and returning a closure we can support multiple
     // "instances" of manila with different configurations running
     // in one app. All configurable variable references go here:
-    return (filepath, context, callback) => {
+    function compile(filepath) {
 
-        // Support relative file paths
-        if (filepath.indexOf(root) !== 0) {
-            filepath = path.join(root, viewsDir, filepath);
-        }
-
-        // Support extensionless file paths
-        if (!filepath.match(extRegx)) {
-            filepath += extension;
-        }
-
-        read(filepath, { encoding: 'utf8' }, function(err, template) {
-
-            if (err) {
-                callback(err);
-            } else {
-
-                parseIncludes(template, fullTemplate => {
-                    callback(undefined, parse(fullTemplate, context));
-                }, {
-                    partialsDir: partialsDir,
-                    extension: extension
-                });
+        return new Promise((resolve, reject) => {
+            // Support paths relative to views directory
+            if (filepath.indexOf(root) !== 0) {
+                filepath = path.join(root, viewsDir, filepath);
             }
+
+            read(filepath, { encoding: 'utf8' }, function(err, template) {
+
+                if (err) {
+                    reject(err);
+                } else {
+                    
+                    parseIncludes(template, fullTemplate => {
+                        resolve(fullTemplate);
+                    }, {
+                        partialsDir: partialsDir,
+                        extension: extension
+                    });
+                }
+            });
         });
-    };
+    }
+    
+    function parse(filepath, context, callback) {
+
+        compile(filepath)
+            .then(template => {
+                callback(undefined, render(template, context));
+            })
+            .catch(error => {
+                callback(error);
+            });
+    }
+
+    return parse;
 }
 
 module.exports = opts => {
-    return manila(opts);
+    return manila(opts || {});
 };

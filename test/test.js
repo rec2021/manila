@@ -31,13 +31,6 @@ exports.checkOutput = function(test) {
 	});
 };
 
-exports.extensionExcluded = function(test) {
-	manila('input', context, (err, output) => {
-		test.ok(output.replace(/\s/g, '') === desired, 'should work without filepath extension');
-		test.done();
-	});
-};
-
 exports.customExtension = function(test) {
 	manila2('input.html', context, (err, output) => {
 		test.ok(output.replace(/\s/g, '') === desired, 'should accept custom extension');
