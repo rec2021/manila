@@ -3,7 +3,7 @@
   "version": "1.2.2",
   "description": "The Node template engine you're looking for",
   "main": "manila.js",
-  "jsnext:main": "manila.js",
+  "jsnext:main": "manila.es6.js",
   "scripts": {
     "test": "nodeunit test/test.js"
   },
