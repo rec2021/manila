@@ -12,6 +12,24 @@ const read = require('fs').readFile,
         endIf: /{{\s*?endif\s*?}}/i,
         elseBlock: /{{\s*?else\s*?}}/i
     },
+    ifrx = {
+        start: '{{\\s*if\\s*([^}]*)\\s*}}([\\s\\S]*?',
+        open: rx.ifBlock,
+        close: rx.endIf,
+        childOpen: '{{\\s*if\\s*[^}]*?\\s*}}[\\s\\S]*?',
+        childClose: '{{\\s*endif\\s*}}[\\s\\S]*?',
+        end: '){{\\s*endif\\s*}}',
+        endLength: 23
+    },
+    looprx = {
+        start: '{{\\s*for\\s*([^}]*)\\s*in\\s*([^}]*)\\s*}}([\\s\\S]*?',
+        open: rx.forIn,
+        close: rx.endFor,
+        childOpen: '{{\\s*for\\s*[^}]*\\s*}}[\\s\\S]*?',
+        childClose: '{{\\s*endfor\\s*}}[\\s\\S]*?',
+        end: '){{\\s*endfor\\s*}}',
+        endLength: 24
+    },
     escapeMap = {
         '<': '&lt;',
         '>': '&gt;',
@@ -87,7 +105,7 @@ function parseVars(template, context, match) {
 function parseLoops(template, context, match) {
 
     let raw     = match[0],
-        index   = match[1],
+        index   = match[1].trim(),
         arrName = match[2],
         html    = match[3],
         list    = [],
@@ -114,6 +132,7 @@ function parseLoops(template, context, match) {
             } else {
                 subContext[index] = list[value];
             }
+
             output += render(html, subContext);
         });
     }
@@ -182,51 +201,66 @@ function parseIncludes(template, callback, opts) {
 
 /*---------------- Regex generating functions ----------------*/
 
-// In order to support nesting, we need to dynamically build
-// a regex that ignores the correct number of closing tags.
-function getLoopRegx(template) {
-    
-    let result,
+function splitTemplate(template, regx) {
 
-        secondHalf = template.split(rx.forIn)[1];
+    let openIndex = template.search(regx),
+        openMatch = regx.exec(template);
 
-    if (!secondHalf) {
-
-        result = false;
-    // If another for-in loop starts before this one is closed...
-    } else if (secondHalf.search(rx.forIn) < secondHalf.search(rx.endFor)) {
-        // use lazy matching
-        result = /{{\s*?for\s*?(\S*?)\s*?in\s*?(\S*?)\s*?}}([\s\S]*?){{\s*?endfor\s*?}}/i;
-
-    } else {
-        // use greedy matching
-        result = /{{\s*?for\s*?(\S*?)\s*?in\s*?(\S*?)\s*?}}([\s\S]*){{\s*?endfor\s*?}}/i;
-    }
-    
-    return result;
+    return openMatch ? template.substring(openIndex + openMatch[0].length) : null;
 }
 
-function getIfRegx(template) {
+function getRegx(template, config) {
 
-    let result,
-        match = rx.ifBlock.exec(template);
+    let counts = {
+            open: 1,
+            close: 0
+        },
+        tmpl = splitTemplate(template, config.open),
+        result = config.start;
 
-    if (match) {
+    while (tmpl && counts.open !== counts.close) {
 
-        let secondHalf = template.substring(template.search(rx.ifBlock) + match[0].length);
+        let open = tmpl.search(config.open),
+            close = tmpl.search(config.close);
 
-        // If another if block starts before this one is closed...
-        if (secondHalf.search(rx.ifBlock) < secondHalf.search(rx.endIf)) {
-            // use greedy matching
-            result = /{{\s*?if\s*?([\s\S]*?)\s*?}}([\s\S]*){{\s*?endif\s*?}}/i;
-
+        if (open !== -1 && open < close) {
+            result += config.childOpen;
+            counts.open++;
+            tmpl = splitTemplate(tmpl, config.open);
+        } else if (close !== -1) {
+            result += config.childClose;
+            counts.close++;
+            tmpl = splitTemplate(tmpl, config.close);
         } else {
-            // use lazy matching
-            result = /{{\s*?if\s*?([\s\S]*?)\s*?}}([\s\S]*?){{\s*?endif\s*?}}/i;
+            break;
         }
     }
+
+    if (counts.close !== 0) {
+        result = result.substring(0, result.length - config.endLength) + config.end;
+    }
+
+    return new RegExp(result, 'i');
+}
+
+function process(loop, template, context, index) {
+
+    let regx;
     
-    return result;
+    if (index === undefined) {
+        index = template.search(loop ? rx.forIn : rx.ifBlock);
+    }
+
+    if (index !== -1) {
+        regx = getRegx(template, loop ? looprx : ifrx);
+    }
+
+    if (regx) {
+        template = loop ? parseLoops(template, context, regx.exec(template))
+                        : parseIfs(template, context, regx.exec(template));
+    }
+
+    return template;
 }
 
 /*---------------- Main rendering function (syncronous) ----------------*/
@@ -234,45 +268,27 @@ function getIfRegx(template) {
 function render(template, context) {
 
     let match, regx,
-
-        loopFirst = template.search(rx.forIn) < template.search(rx.ifBlock);
+        indexOfLoop = template.search(rx.forIn),
+        indexOfIf = template.search(rx.ifBlock),
+        loopFirst = indexOfLoop < indexOfIf;
 
     if (loopFirst) {
 
-        regx = getLoopRegx(template);
+        template = process(true, template, context, indexOfLoop);
 
-        if (regx) {
-
-            template = parseLoops(template, context, regx.exec(template));
-        }
-
-        regx = getIfRegx(template);
-
-        if (regx) {
-
-            template = parseIfs(template, context, regx.exec(template));
-        }
+        template = process(false, template, context);
         
     } else {
 
-        regx = getIfRegx(template);
+        template = process(false, template, context, indexOfIf);
 
-        if (regx) {
-
-            template = parseIfs(template, context, regx.exec(template));
-        }
-
-        regx = getLoopRegx(template);
-
-        if (regx) {
-
-            template = parseLoops(template, context, regx.exec(template));
-        }
+        template = process(true, template, context);
     }
 
     match = rx.variable.exec(template);
 
     if (match) {
+
         template = parseVars(template, context, match);
     }
 
@@ -304,6 +320,10 @@ function manila(opts) {
             // Support paths relative to views directory
             if (filepath.indexOf(root) !== 0) {
                 filepath = path.join(root, viewsDir, filepath);
+            }
+            // Add extension if missing
+            if (!filepath.match(new RegExp(extension + '$'))) {
+                filepath += extension;
             }
 
             read(filepath, { encoding: 'utf8' }, function(err, template) {

@@ -1,27 +1,6 @@
 # Manila
 
-Manila is a template engine for Node. By at least [one benchmark](https://github.com/baryshev/template-benchmark), it is the fastest template engine tested at the time of writing:
-```javascript
-// rendering 100000 templates
-1) manila               - 902ms
-2) ECT                  - 1082ms
-3) Gaikan               - 1367ms
-4) Fest                 - 1514ms
-5) Dust                 - 1579ms
-6) doT                  - 1751ms
-7) Hogan.js             - 1916ms
-8) EJS without `with`   - 2660ms
-9) Swig                 - 3607ms
-10) Eco                 - 4077ms
-11) Handlebars.js       - 4082ms
-12) Underscore          - 4243ms
-13) EJS                 - 5481ms
-14) Jade without `with` - 5936ms
-15) CoffeeKup           - 7622ms
-16) Jade                - 18776ms
-```
-
-Manila was developed using ES2015 features and currently requires Node version 4.0.0 or later.
+Manila is a template engine for Node 4+.
 
 # Installation
 ```

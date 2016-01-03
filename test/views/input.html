@@ -2,6 +2,7 @@
 <h3>{{title|safe}}</h3>
 <h4>{{title|skip}}</h4>
 
+{{if not flag}}
 <ul>
 {{for item in items}}
 	{{if item}}
@@ -9,6 +10,7 @@
 	{{endif}}
 {{endfor}}
 </ul>
+{{endif}}
 
 {{if flag}}
 flag is true
@@ -16,8 +18,4 @@ flag is true
 flag is false
 {{endif}}
 
-{{if not flag}}
-<div>not works</div>
-{{endif}}
-
-{{include inc.html}}
+{{include inc}}
