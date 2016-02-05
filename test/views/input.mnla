@@ -1,21 +1,25 @@
-<h1>{{title}}</h1>
-<h3>{{title|safe}}</h3>
-<h4>{{title|skip}}</h4>
-
-{{if not flag}}
+<h1><< title >></h1>
+<h3><<<title>>></h3>
+<h4>&lcub;&lcub;title&rcub;&rcub;</h4>
+<<test>>
+<<if (!flag) { >>
 <ul>
-{{for item in items}}
-	{{if item}}
-	<li>{{item}}<i>{{for key.value in obj}}{{key}}:{{value}}{{endfor}}</i></li>
-	{{endif}}
-{{endfor}}
+<<items.forEach(function(item) { >>
+	<<if (item) { >>
+	<li><<item>><i>
+		<<for (key in obj) { >>
+			<<key>>:<<obj[key]>>
+		<< } >>
+	</i></li>
+	<< } >>
+<< }); >>
 </ul>
-{{endif}}
+<< } >>
 
-{{if flag}}
-flag is true
-{{else}}
-flag is false
-{{endif}}
+<<if (flag) { >>
+	flag is true
+<<} else {>>
+	flag is false
+<< } >>
 
-{{include inc}}
+<<include inc>>

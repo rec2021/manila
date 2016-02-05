@@ -1,7 +1,7 @@
 {
   "name": "manila",
-  "version": "1.2.2",
-  "description": "The Node template engine you're looking for",
+  "version": "2.0.0",
+  "description": "A simple template engine for Node",
   "main": "manila.js",
   "jsnext:main": "manila.es6.js",
   "scripts": {
