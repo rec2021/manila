@@ -1,6 +1,6 @@
 # Manila
 
-Manila is a template engine for Node 4+.
+Manila is a no-frills template engine for Node 4+.
 
 Version 2.0 brings massive performance improvements and an even simpler syntax. Thanks to [John Resig](http://ejohn.org/blog/javascript-micro-templating/) for inspiring this approach.
 

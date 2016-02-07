@@ -1,6 +1,6 @@
 {
   "name": "manila",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A simple template engine for Node",
   "main": "manila.js",
   "jsnext:main": "manila.es6.js",
