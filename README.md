@@ -91,7 +91,7 @@ The Manila module accepts a configuration object with the following optional pro
 
 `views`: the path to the directory in which to look for views, relative to the root. Defaults to 'views'.
 
-`partials`: the directory in which to look for partial mnla files to use with `<<include ... >>` tags, realtive to the root. Defaults to the same directory as the `views` setting.
+`partials`: the directory in which to look for partial mnla files to use with `<<include ... >>` tags, realtive to the root. Defaults to `views`.
 
 `extension`: the file extension of your views/partials. Defaults to `'.mnla'`.
 

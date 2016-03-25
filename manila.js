@@ -66,13 +66,12 @@ function manila(opts) {
     let partialsDir,
         viewsDir,
         root,
-        extension = '.mnla';
+        extension = 'mnla';
 
     root = opts.root || path.dirname(require.main.filename);
-    viewsDir = path.join(root, 'views');
-    viewsDir = path.join(opts ? opts.views || viewsDir : viewsDir, '/');
-    partialsDir = path.join(root, opts ? opts.partials || viewsDir : viewsDir, '/');
-    extension = opts.extension ? '.' + opts.extension : extension;
+    viewsDir = path.join(root, opts.views || 'views', '/');
+    partialsDir = path.join(root, opts.partials || 'views', '/');
+    extension = '.' + (opts.extension || extension);
     extension = extension.replace('..', '.');
 
     function getFile(filepath) {
@@ -80,13 +79,13 @@ function manila(opts) {
         return new Promise((resolve, reject) => {
             // Support paths relative to views directory
             if (filepath.indexOf(root) !== 0) {
-                filepath = path.join(root, viewsDir, filepath);
+                filepath = path.join(viewsDir, filepath);
             }
             // Add extension if missing
             if (!filepath.match(new RegExp(extension + '$'))) {
                 filepath += extension;
             }
-
+            
             read(filepath, { encoding: 'utf8' }, function(err, template) {
 
                 if (err) {

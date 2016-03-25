@@ -26,7 +26,7 @@ const fs = require('fs'),
 
 exports.checkOutput = test => {
 
-	manila('input.mnla', context, (err, output) => {
+	manila(__dirname + '/views/input.mnla', context, (err, output) => {
 
 		if (err) {
 			console.trace(err.stack);
