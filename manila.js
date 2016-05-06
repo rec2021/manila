@@ -18,8 +18,10 @@ function htmlEscape(str) {
     });
 }
 
-global._e_ = function(val) {
-    return typeof val === 'string' ? htmlEscape(val) : val;
+global.manila = {
+    e: function(val) {
+        return typeof val === 'string' ? htmlEscape(val) : val;
+    }
 };
 
 function promisify(callback, resolve, reject) {
@@ -40,7 +42,7 @@ function promisify(callback, resolve, reject) {
 
 function parseIncludes(template, callback, opts) {
 
-    let match = /<<\s*?include\s(\S*?)\s*?>>/i.exec(template),
+    let match = /<-\s*?include\s(\S*?)\s*?->/i.exec(template),
         ext = new RegExp(opts.extension + '$'),
         raw, include;
 

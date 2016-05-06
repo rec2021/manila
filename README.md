@@ -2,8 +2,6 @@
 
 Manila is a no-frills template engine for Node 4+.
 
-Version 2.0 brings massive performance improvements and an even simpler syntax. Thanks to [John Resig](http://ejohn.org/blog/javascript-micro-templating/) for inspiring this approach.
-
 # Installation
 ```
 npm install manila
@@ -34,7 +32,7 @@ app.listen(3000);
 
 ```html
 <!-- views/index.mnla -->
-<h1><<message>></h1>
+<h1><-message-></h1>
 ```
 
 Run `node index` and open `http://localhost:3000` in your browser to see the rendered result.
@@ -58,7 +56,7 @@ http.createServer((req, res) => {
 
 ```html
 <!-- views/index.mnla -->
-<h1><<message>></h1>
+<h1><-message-></h1>
 ```
 
 # Promise Support
@@ -91,7 +89,7 @@ The Manila module accepts a configuration object with the following optional pro
 
 `views`: the path to the directory in which to look for views, relative to the root. Defaults to 'views'.
 
-`partials`: the directory in which to look for partial mnla files to use with `<<include ... >>` tags, realtive to the root. Defaults to `views`.
+`partials`: the directory in which to look for partial mnla files to use with `<-include ... ->` tags, realtive to the root. Defaults to `views`.
 
 `extension`: the file extension of your views/partials. Defaults to `'.mnla'`.
 
@@ -107,13 +105,13 @@ const manila = require('manila')({
 
 ## Variables
 
-`<< expression >>`: This tag will be replaced with the HTML-escaped result of evaluating the expression or variable with the current context. 
+`<- expression ->`: This tag will be replaced with the HTML-escaped result of evaluating the expression or variable with the current context. 
 
-`<<< expression >>>`: Use three carets instead of two to prevent HTML-escaping of the expression.
+`<-- expression -->`: Use two dashes instead of one to prevent HTML-escaping of the expression.
 
 ## Includes
 
-`<< include path/to/file >>`: Includes the content of the named file as part of the current template. `path/to/file` is relative to `views/` unless overwritten during configuration.
+`<- include path/to/file ->`: Includes the content of the named file as part of the current template. `path/to/file` is relative to `views/` unless overwritten during configuration.
 
 ## Blocks
 
@@ -121,29 +119,25 @@ Manila tags are executed as plain 'ol JavaScript, so there's no template languag
 
 #### Conditionals
 ```
-<< if (expression) { >>
+<- if (expression) { ->
 	<p>This markup renders if expression is truthy</p>
-<< } else { >>
+<- } else { ->
 	<p>This markup renders if expression is falsy</p>
-<< } >>
+<- } ->
 ```
 
 #### Array Loops
 
 ```
-<< list.forEach(item => { >>
-	<li><<item>></li>
-<< }) >>
+<- list.forEach(item => { ->
+	<li><-item-></li>
+<- }) ->
 ```
 
 #### Object Loops
 
 ```
-<< for (key in obj) { >>
-	<li> <<key>> is <<obj[key]>> </li>
-<< } >>
+<- for (key in obj) { ->
+	<li> <-key-> is <-obj[key]-> </li>
+<- } ->
 ```
-
-### Syntax Highlighting
-
-If your text editor thinks your mnla file is an html file, it might indicate that `<< manila >>` tags are errors. To prevent this, change your syntax setting for the .mnla filetype to XML. In Sublime: View > Syntax > Open all with current extension as > XML.
