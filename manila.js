@@ -42,7 +42,7 @@ function promisify(callback, resolve, reject) {
 
 function parseIncludes(template, callback, opts) {
 
-    let match = /<-\s*?include\s(\S*?)\s*?->/i.exec(template),
+    let match = /<:\s*?include\s(\S*?)\s*?:>/i.exec(template),
         ext = new RegExp(opts.extension + '$'),
         raw, include;
 

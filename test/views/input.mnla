@@ -1,25 +1,25 @@
-<h1><- title -></h1>
-<h3><--title--></h3>
+<h1><: title :></h1>
+<h3><::title::></h3>
 <h4>&lcub;&lcub;title&rcub;&rcub;</h4>
-<-test->
-<-if (!flag) { ->
+<:test:>
+<:if (!flag) { :>
 <ul>
-<-items.forEach(function(item) { ->
-	<-if (item) { ->
-	<li><-item-><i>
-		<-for (key in obj) { ->
-			<-key->:<-obj[key]->
-		<- } ->
+<:items.forEach(function(item) { :>
+	<:if (item) { :>
+	<li><:item:><i>
+		<:for (key in obj) { :>
+			<:key:>:<:obj[key]:>
+		<: } :>
 	</i></li>
-	<- } ->
-<- }); ->
+	<: } :>
+<: }); :>
 </ul>
-<- } ->
+<: } :>
 
-<-if (flag) { ->
+<:if (flag) { :>
 	flag is true
-<-} else {->
+<:} else {:>
 	flag is false
-<- } ->
+<: } :>
 
-<-include inc->
+<:include inc:>
