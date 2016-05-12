@@ -56,7 +56,7 @@ http.createServer((req, res) => {
 
 ```html
 <!-- views/index.mnla -->
-<h1><: message :></h1>
+<h1><:message:></h1>
 ```
 
 # Promise Support
@@ -105,13 +105,13 @@ const manila = require('manila')({
 
 ## Variables
 
-`<: expression :>`: This tag will be replaced with the HTML-escaped result of evaluating the expression or variable with the current context. 
+`<:expression:>` This tag will be replaced with the HTML-escaped result of evaluating the expression or variable with the current context. 
 
-`<:: expression ::>`: Use two colons instead of one to prevent HTML-escaping of the expression.
+`<::expression::>` Use two colons instead of one to prevent HTML-escaping of the expression.
 
 ## Includes
 
-`<: include path/to/file :>`: Includes the content of the named file as part of the current template. `path/to/file` is relative to `views/` unless overwritten during configuration.
+`<: include path/to/file :>` Includes the content of the named file as part of the current template. `path/to/file` is relative to `views/` unless overwritten during configuration.
 
 ## Blocks
 
@@ -130,7 +130,7 @@ Manila tags are executed as plain 'ol JavaScript, so there's no template languag
 
 ```
 <: list.forEach(item => { :>
-	<li><: item :></li>
+	<li><:item:></li>
 <: }) :>
 ```
 
@@ -138,6 +138,6 @@ Manila tags are executed as plain 'ol JavaScript, so there's no template languag
 
 ```
 <: for (key in obj) { :>
-	<li> <: key :> is <: obj[key] :> </li>
+	<li> <:key:> is <:obj[key]:> </li>
 <: } :>
 ```
