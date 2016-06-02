@@ -13,7 +13,7 @@ const read = require('fs').readFile,
 let compiled = {};
 
 function htmlEscape(str) {
-    return str.replace(/[&<>'"]/g, c => {
+    return str.replace(/[<>'"]/g, c => {
         return escapeMap[c];
     });
 }
